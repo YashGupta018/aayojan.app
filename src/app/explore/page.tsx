@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/lib/context';
-import { MOCK_VENDORS, CITIES } from '@/lib/data';
+import { CITIES, Vendor } from '@/lib/data';
+import { getVendors } from '@/lib/api';
 import VendorCard from '@/components/VendorCard';
 import { 
   Search, 
@@ -26,6 +27,23 @@ function ExploreContent() {
   const [activeCity, setActiveCity] = useState<string>(initialCity || selectedCity || 'All India');
   const [searchTerm, setSearchTerm] = useState<string>(initialQuery || '');
   const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
+  const [dbVendors, setDbVendors] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      try {
+        const data = await getVendors();
+        setDbVendors(data);
+      } catch (err) {
+        console.error('Failed to load explore vendors', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const categories = [
     { id: 'all', label: 'All Services' },
@@ -38,7 +56,7 @@ function ExploreContent() {
   ];
 
   const filteredVendors = useMemo(() => {
-    return MOCK_VENDORS.filter(v => {
+    return dbVendors.filter(v => {
       if (categoryFilter !== 'all' && v.category !== categoryFilter) {
         return false;
       }

@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import HeroSearch from '@/components/HeroSearch';
 import VendorCard from '@/components/VendorCard';
-import { MOCK_VENDORS, EVENT_TYPES } from '@/lib/data';
+import { EVENT_TYPES, Vendor } from '@/lib/data';
+import { getVendors } from '@/lib/api';
 import { 
   Sparkles, 
   ShieldCheck, 
@@ -22,6 +23,22 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFeaturedVendors() {
+      try {
+        const data = await getVendors({ limit: 4 });
+        setVendors(data);
+      } catch (err) {
+        console.error('Failed to load vendors', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadFeaturedVendors();
+  }, []);
   const categories = [
     { name: 'Venues & Lawns', icon: Building2, count: '1,200+ listed', link: '/explore?category=venue' },
     { name: 'Catering & Food Craft', icon: UtensilsCrossed, count: '850+ listed', link: '/explore?category=catering' },
@@ -98,15 +115,25 @@ export default function HomePage() {
             href="/explore"
             className="self-start sm:self-auto bg-white border border-[#E7E1D8] hover:border-[#E08A2C] text-[#1F2023] hover:text-[#E08A2C] text-xs font-semibold px-4 py-2 rounded-full shadow-sm transition-all flex items-center gap-1.5"
           >
-            <span>See All {MOCK_VENDORS.length}+ Vendors</span>
+            <span>See All Vendors</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {MOCK_VENDORS.slice(0, 4).map((vendor) => (
-            <VendorCard key={vendor.id} vendor={vendor} />
-          ))}
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="animate-pulse bg-white border border-[#E7E1D8] rounded-2xl h-80 flex flex-col p-4 space-y-4">
+                <div className="bg-stone-200 rounded-xl h-44 w-full"></div>
+                <div className="h-4 bg-stone-200 rounded w-3/4"></div>
+                <div className="h-3 bg-stone-200 rounded w-1/2"></div>
+              </div>
+            ))
+          ) : (
+            vendors.map((vendor) => (
+              <VendorCard key={vendor.id} vendor={vendor} />
+            ))
+          )}
         </div>
       </section>
 
