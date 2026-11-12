@@ -3,6 +3,7 @@ import "./globals.css";
 import { AppProvider } from "@/lib/context";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Ayojan.app - Event Planning, Discovery & Vendor Operating System",
@@ -24,6 +25,7 @@ export default function RootLayout({
           </main>
           <Footer />
         </AppProvider>
+        <Analytics />
       </body>
     </html>
   );
